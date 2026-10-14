@@ -12,6 +12,7 @@ That installs the pack into the project's `.graph/packs/github`. Add `--global` 
 
 ## Requirements
 
+- graph v0.16 or later.
 - macOS or Linux.
 - `bash`, `git`, `gh` and `jq` on your `PATH`.
 - `GH_TOKEN`, or `gh auth login`, for the `gh_*` tools.

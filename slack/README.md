@@ -12,6 +12,7 @@ That installs the pack into the project's `.graph/packs/slack`. Add `--global` t
 
 ## Requirements
 
+- graph v0.16 or later.
 - macOS or Linux.
 - `bash`, `curl` and `jq` on your `PATH`.
 - `SLACK_BOT_TOKEN` in the environment.
