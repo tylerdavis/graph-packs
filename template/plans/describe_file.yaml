@@ -1,0 +1,44 @@
+version: 2
+identifier: describe_file
+name: Describe a file
+description: Reads a file's stats and opening excerpt and returns them with a one-paragraph summary of what the file is for.
+input_schema:
+  type: object
+  required: [file]
+  properties:
+    file:
+      type: string
+      description: Path to the file, absolute or relative to the working directory
+output_schema:
+  type: object
+  required: [path, summary, stats]
+  properties:
+    path: { type: string }
+    summary: { type: string }
+    stats: { type: object }
+steps:
+  - id: stats
+    tool_name: $pack__tool__file_info
+    input:
+      file: "{{input.file}}"
+  - id: summary
+    tool_name: builtin__infer
+    input:
+      instruction: |-
+        In one paragraph, say what this file is and what it is for. Name its format and anything notable about its size or structure. Do not guess beyond what the excerpt shows.
+
+        Path: {{stats.path}}
+        MIME type: {{stats.mime}}
+        Lines: {{stats.lines}}, words: {{stats.words}}, bytes: {{stats.bytes}}
+
+        Opening excerpt:
+        {{stats.excerpt}}
+finish:
+  output:
+    path: "{{stats.path}}"
+    summary: "{{summary.text}}"
+    stats:
+      mime: "{{stats.mime}}"
+      lines: "{{stats.lines}}"
+      words: "{{stats.words}}"
+      bytes: "{{stats.bytes}}"

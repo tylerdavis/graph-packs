@@ -1,0 +1,39 @@
+version: 2
+name: migrate_v2_write
+description: >
+  Returns the unified diff between a file and its migrated content, and
+  writes the migrated content when apply is true. Used by plan__migrate_v2.
+kind: exec
+command: bash
+args:
+  - "-ceuo"
+  - "pipefail"
+  - |
+    path=$1 content=$2 apply=$3
+    content=${content%$'\n'}
+    diff=$(diff -u --label "$path" --label "$path (v2)" -- "$path" <(printf '%s\n' "$content") || true)
+    if [ "$apply" = true ] && [ -n "$diff" ]; then
+      printf '%s\n' "$content" > "$path"
+    fi
+    jq -n --arg path "$path" --arg diff "$diff" --argjson apply "$apply" \
+      '{path: $path, changed: ($diff != ""), applied: ($apply and $diff != ""), diff: $diff}'
+  - migrate_v2_write
+  - "{{input.path}}"
+  - "{{input.content}}"
+  - "{{input.apply}}"
+output: json
+timeout_secs: 10
+input_schema:
+  type: object
+  required: [path, content, apply]
+  properties:
+    path:    { type: string, description: Absolute path of the file to migrate }
+    content: { type: string, description: The file's full migrated content }
+    apply:   { type: boolean, description: Write the file; false only returns the diff }
+output_schema:
+  type: object
+  properties:
+    path:    { type: string }
+    changed: { type: boolean }
+    applied: { type: boolean }
+    diff:    { type: string }

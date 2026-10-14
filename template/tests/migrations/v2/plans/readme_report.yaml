@@ -1,0 +1,17 @@
+version: 2
+identifier: readme_report
+name: README report
+description: Describes the repo's README and its license file.
+steps:
+  # the README gets the full treatment
+  - id: readme
+    tool_name: example__plan__describe_file
+    input:
+      path: README.md
+  - id: license
+    tool_name: example__tool__file_stats
+    input: { path: LICENSE }
+finish:
+  output:
+    readme: "{{readme.summary}}"
+    license_path: "{{license.path}}"

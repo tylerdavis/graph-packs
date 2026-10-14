@@ -1,0 +1,41 @@
+version: 2
+name: migrate_v2_scan
+description: >
+  Finds the plan, agent and tool files under a graph directory that call this
+  pack's v1 names, and returns each one's path and content. Used by
+  plan__migrate_v2.
+kind: exec
+command: bash
+args:
+  - "-ceuo"
+  - "pipefail"
+  - |
+    pack=$1 root=$2
+    cd -- "$root"
+    { grep -rlE --include='*.yaml' --include='*.yml' -- "${pack}__(tool__file_stats|plan__describe_file)" plans agents tools 2>/dev/null || true; } \
+      | while IFS= read -r f; do
+          jq -n --arg path "$PWD/$f" --rawfile content "$f" '{path: $path, content: $content}'
+        done \
+      | jq -s '{files: .}'
+  - migrate_v2_scan
+  - "{{input.pack}}"
+  - "{{input.root}}"
+output: json
+timeout_secs: 30
+read_only: true
+input_schema:
+  type: object
+  required: [pack, root]
+  properties:
+    pack: { type: string, description: The name the pack is installed under }
+    root: { type: string, description: Directory holding the plans, agents and tools directories to scan }
+output_schema:
+  type: object
+  properties:
+    files:
+      type: array
+      items:
+        type: object
+        properties:
+          path:    { type: string }
+          content: { type: string }

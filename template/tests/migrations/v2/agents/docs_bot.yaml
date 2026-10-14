@@ -1,0 +1,7 @@
+version: 1
+name: docs_bot
+description: Answers questions about the repo's docs.
+model: chat
+tools: [example__tool__file_stats, example__plan__describe_file]
+system_prompt: |
+  Use example__tool__file_stats for sizes and example__plan__describe_file for summaries.
