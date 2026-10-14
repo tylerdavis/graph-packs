@@ -1,0 +1,66 @@
+name: release
+
+on:
+  push:
+    tags: ["*/v*.*.*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    env:
+      SLACK_BOT_TOKEN: xoxb-not-a-real-token
+      GRAPH_STORAGE: memory
+      TAG: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/graph
+      - name: Read the tag
+        run: |
+          echo "PACK_DIR=${TAG%/v*}" >> "$GITHUB_ENV"
+          echo "VERSION=v${TAG##*/v}" >> "$GITHUB_ENV"
+      - name: Test the pack at this tag
+        run: graph pack test "$PACK_DIR"
+      - name: Install the release the way users do
+        run: |
+          project="$RUNNER_TEMP/project"
+          mkdir -p "$project/.graph"
+          printf 'version = 4\n' > "$project/.graph/config.toml"
+          cd "$project"
+          graph pack add "file://$GITHUB_WORKSPACE" --path "$PACK_DIR" --ref "$VERSION"
+          echo "HASH=$(sed -n 's/^hash = "\(.*\)"$/\1/p' .graph/packs.lock)" >> "$GITHUB_ENV"
+      - name: Write the release notes
+        run: |
+          notes="$RUNNER_TEMP/notes.md"
+          awk -v heading="## $VERSION" '
+            $0 == heading { found = 1; next }
+            found && /^## / { exit }
+            found { print }
+          ' "$PACK_DIR/CHANGELOG.md" | sed '/./,$!d' > "$RUNNER_TEMP/changes.md"
+          if ! grep -q '[^[:space:]]' "$RUNNER_TEMP/changes.md"; then
+            echo "::error::$PACK_DIR/CHANGELOG.md has no '## $VERSION' section"
+            exit 1
+          fi
+          {
+            cat "$RUNNER_TEMP/changes.md"
+            echo
+            echo "## Verify"
+            echo
+            echo "| | |"
+            echo "|---|---|"
+            echo "| Install | \`graph pack add $PACK_DIR --ref $VERSION\` |"
+            echo "| Tag | \`$TAG\` |"
+            echo "| Commit | \`$GITHUB_SHA\` |"
+            echo "| Content hash | \`$HASH\` |"
+            echo
+            echo "After installing, \`.graph/packs.lock\` records this tag, commit and content hash. This tag is protected and will never move or be deleted."
+          } > "$notes"
+          echo "NOTES=$notes" >> "$GITHUB_ENV"
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$TAG" --verify-tag --title "$PACK_DIR $VERSION" --notes-file "$NOTES"

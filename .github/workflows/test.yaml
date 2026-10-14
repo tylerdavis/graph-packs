@@ -2,23 +2,18 @@ name: test
 
 on:
   push:
+    branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
-  test:
+  packs:
     runs-on: ubuntu-24.04
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - pack: github
-            image: ghcr.io/tylerdavis/graph:v0.16.0
-          - pack: slack
-            image: ghcr.io/tylerdavis/graph:v0.16.0
-    container: ${{ matrix.image }}
     env:
       SLACK_BOT_TOKEN: xoxb-not-a-real-token
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: ./.github/actions/graph
       - run: graph pack test
-        working-directory: ${{ matrix.pack }}

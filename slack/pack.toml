@@ -5,6 +5,6 @@ license = "MIT"
 homepage = "https://github.com/tylerdavis/graph-packs/tree/main/slack"
 
 [requires]
-graph = ">=0.16"
+graph = ">=0.15"
 binaries = ["bash", "curl", "jq"]
 env = ["SLACK_BOT_TOKEN"]

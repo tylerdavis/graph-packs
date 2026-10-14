@@ -1,0 +1,22 @@
+name: graph
+description: Install graph at the pinned commit
+runs:
+  using: composite
+  steps:
+    - id: pin
+      shell: bash
+      run: echo "rev=3382fa5b98c28db6da4bd89cb911d6ae6ffe1ec7" >> "$GITHUB_OUTPUT"
+    - id: cache
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+      with:
+        path: ~/.cargo/bin/graph
+        key: graph-${{ runner.os }}-${{ steps.pin.outputs.rev }}
+    - if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libssl-dev pkg-config
+        rustup toolchain install 1.94 --profile minimal
+        cargo +1.94 install --locked --git https://github.com/tylerdavis/graph --rev "${{ steps.pin.outputs.rev }}" graph-cli
+    - shell: bash
+      run: graph --version
