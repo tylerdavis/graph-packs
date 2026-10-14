@@ -5,7 +5,7 @@ runs:
   steps:
     - id: pin
       shell: bash
-      run: echo "rev=26a1415cd7964fbcd766252281d3b3309e8dbccd" >> "$GITHUB_OUTPUT"
+      run: echo "rev=eb185d5c22b459d96f8ef4b8c3ea7fcd8ce95eec" >> "$GITHUB_OUTPUT"
     - id: cache
       uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
       with:
