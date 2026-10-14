@@ -11,8 +11,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - pack: template
-            image: ghcr.io/tylerdavis/graph:v0.17.0
           - pack: github
             image: ghcr.io/tylerdavis/graph:v0.16.0
           - pack: slack
