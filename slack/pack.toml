@@ -1,0 +1,10 @@
+version = 1
+name = "slack"
+description = "Post messages to Slack channels and threads."
+license = "MIT"
+homepage = "https://github.com/tylerdavis/graph-pack-slack"
+
+[requires]
+graph = ">=0.16"
+binaries = ["bash", "curl", "jq"]
+env = ["SLACK_BOT_TOKEN"]
