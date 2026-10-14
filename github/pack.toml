@@ -6,4 +6,5 @@ homepage = "https://github.com/tylerdavis/graph-packs/tree/main/github"
 
 [requires]
 graph = ">=0.15"
+os = ["macos", "linux"]
 binaries = ["bash", "git", "gh", "jq"]
