@@ -2,7 +2,7 @@ version = 1
 name = "slack"
 description = "Post messages to Slack channels and threads."
 license = "MIT"
-homepage = "https://github.com/tylerdavis/graph-pack-slack"
+homepage = "https://github.com/tylerdavis/graph-packs/tree/main/slack"
 
 [requires]
 graph = ">=0.16"

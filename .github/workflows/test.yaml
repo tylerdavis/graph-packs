@@ -1,0 +1,26 @@
+name: test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - pack: template
+            image: ghcr.io/tylerdavis/graph:v0.17.0
+          - pack: github
+            image: ghcr.io/tylerdavis/graph:v0.16.0
+          - pack: slack
+            image: ghcr.io/tylerdavis/graph:v0.16.0
+    container: ${{ matrix.image }}
+    env:
+      SLACK_BOT_TOKEN: xoxb-not-a-real-token
+    steps:
+      - uses: actions/checkout@v4
+      - run: graph pack test
+        working-directory: ${{ matrix.pack }}
