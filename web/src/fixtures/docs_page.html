@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Create a customer | Example API</title>
+<style>body { font-family: sans-serif; }</style>
+<script>window.trackPageView("create-customer");</script>
+</head>
+<body>
+<header class="site-header"><a href="/">Example</a> <a href="/pricing">Pricing</a></header>
+<nav aria-label="Site navigation"><ul><li><a href="/api">API</a></li><li><a href="/guides">Guides</a></li></ul></nav>
+<div class="layout">
+<main>
+<h1>Create a customer</h1>
+<p>Creates a new customer object. See also <a href="update">Update a customer</a>.</p>
+<aside><h4>On this page</h4><ul><li><a href="#parameters">Parameters</a></li></ul></aside>
+<h2 id="parameters">Parameters <a href="#parameters"><svg><path d="M1 1"/></svg></a></h2>
+<div class="method-list">
+<div class="param"><h3><code>description</code> <span class="type">string</span></h3><p>An arbitrary string attached to the object.</p></div>
+<div class="param"><h3><code>email</code> <span class="type">string</span></h3><p>Customer's email address.</p></div>
+<div class="param"><h3><code>name</code> <span class="type">string</span></h3><p>The customer's full name.</p></div>
+<div class="param"><h3><code>phone</code> <span class="type">string</span></h3><p>The customer's phone number.</p></div>
+<div class="param"><h3><span><span>payment_method</span></span><span class="type">string</span></h3><p>The ID of the PaymentMethod to attach.</p></div>
+</div>
+<h2>Request</h2>
+<div class="code"><button>Copy</button><pre><code class="language-bash">curl https://api.example.com/v1/customers \
+  -u "$EXAMPLE_KEY:" \
+  -d name="Jenny Rosen"</code></pre></div>
+<h2>Response</h2>
+<pre><code><div class="line"><span>{</span></div><div class="line"><span>  "id"</span><span>: </span><span>"cus_123"</span><span>,</span></div><div class="line"><span>  "object"</span><span>: </span><span>"customer"</span></div><div class="line"><span>}</span></div></code></pre>
+<p>Set it in the config file:</p>
+<pre class="block">font-family = "Example Mono"
+<button aria-label="Copy"><svg><path d="M0 0"/></svg></button></pre>
+<h2>Errors</h2>
+<table>
+<thead><tr><th>Code</th><th>Meaning</th></tr></thead>
+<tbody><tr><td>400</td><td>Bad request</td></tr><tr><td>401</td><td>Unauthorized</td></tr></tbody>
+</table>
+</main>
+</div>
+<footer>© Example, Inc.</footer>
+<script src="/app.js"></script>
+</body>
+</html>

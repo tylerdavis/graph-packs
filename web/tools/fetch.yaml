@@ -1,0 +1,44 @@
+version: 2
+name: fetch
+description: >
+  Fetch one web page and return it as markdown: {url, title, markdown,
+  truncated}. Use it to read an API reference or docs page, usually one
+  web__tool__search found, before writing a tool or plan against a
+  service: take endpoints, parameters, auth and response shapes from the
+  page, not from memory. Keeps headings, code blocks, tables and links
+  (made absolute), and keeps only the page's <main> or <article> when it
+  has one, dropping site navigation. Plain text, markdown and JSON come
+  back as they are. Output is cut to max_chars, with truncated true when
+  it was; fetch a more specific page (an anchor or sub-page) rather than
+  raising the limit when you can. Read-only.
+kind: exec
+command: bash
+args:
+  - "-c"
+  - 'exec bash "${GRAPH_PACK_DIR:?the web pack needs graph 0.17 or later, which tells pack tools where their pack is installed}/bin/web" fetch "$1" --max-chars "$2"'
+  - fetch
+  - "{{input.url}}"
+  - "{{input.max_chars}}"
+output: json
+timeout_secs: 45
+read_only: true
+input_schema:
+  type: object
+  required: [url]
+  properties:
+    url:
+      type: string
+      description: The http or https URL of the page to read
+    max_chars:
+      type: integer
+      minimum: 1000
+      maximum: 200000
+      default: 40000
+      description: Most characters of markdown to return; longer pages are cut at a paragraph and flagged truncated
+output_schema:
+  type: object
+  properties:
+    url: { type: string, description: The page's URL after any redirects }
+    title: { type: ["string", "null"], description: "The page's title, or its first heading; null for non-HTML content" }
+    markdown: { type: string, description: The page as markdown }
+    truncated: { type: boolean, description: True when the markdown was cut to max_chars }

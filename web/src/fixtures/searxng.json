@@ -1,0 +1,35 @@
+{
+  "query": "stripe api create customer",
+  "number_of_results": 0,
+  "results": [
+    {
+      "url": "https://docs.stripe.com/api/customers/create",
+      "title": "Create a customer | Stripe API Reference",
+      "content": "Creates a new customer object.",
+      "engine": "duckduckgo",
+      "engines": ["duckduckgo", "brave"],
+      "score": 4.0,
+      "category": "general"
+    },
+    {
+      "url": "https://docs.stripe.com/api/customers",
+      "title": "Customers | Stripe API Reference",
+      "engine": "brave",
+      "score": 2.0,
+      "category": "general"
+    },
+    {
+      "url": "https://stackoverflow.com/questions/51144576",
+      "title": "Stripe - create / retrieve customer in one call",
+      "content": "Is there a way to create or retrieve a customer in one call?",
+      "engine": "duckduckgo",
+      "score": 1.0,
+      "category": "general"
+    }
+  ],
+  "answers": [],
+  "corrections": [],
+  "infoboxes": [],
+  "suggestions": [],
+  "unresponsive_engines": []
+}
