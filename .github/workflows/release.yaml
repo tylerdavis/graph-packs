@@ -23,6 +23,23 @@ jobs:
         run: |
           echo "PACK_DIR=${TAG%/v*}" >> "$GITHUB_ENV"
           echo "VERSION=v${TAG##*/v}" >> "$GITHUB_ENV"
+      - name: Check the pack's binaries were built from its source
+        run: |
+          if [ ! -f "$PACK_DIR/src/Cargo.toml" ]; then
+            exit 0
+          fi
+          for platform in darwin-arm64 darwin-x86_64 linux-x86_64 linux-aarch64; do
+            if [ ! -x "$PACK_DIR/bin/$PACK_DIR-$platform" ]; then
+              echo "::error::$PACK_DIR/bin/$PACK_DIR-$platform is missing; run the $PACK_DIR binaries workflow on the release branch first"
+              exit 1
+            fi
+          done
+          built="$(cat "$PACK_DIR/bin/SOURCE")"
+          source="$(git rev-parse "HEAD:$PACK_DIR/src")"
+          if [ "$built" != "$source" ]; then
+            echo "::error::$PACK_DIR/bin was built from source tree $built, but this tag has $source; rerun the binaries workflow"
+            exit 1
+          fi
       - name: Test the pack at this tag
         run: graph pack test "$PACK_DIR"
       - name: Install the release the way users do
