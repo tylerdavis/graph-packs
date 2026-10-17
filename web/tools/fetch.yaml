@@ -15,7 +15,7 @@ kind: exec
 command: bash
 args:
   - "-c"
-  - 'exec bash "${GRAPH_PACK_DIR:?the web pack needs graph 0.17 or later, which tells pack tools where their pack is installed}/bin/web" fetch "$1" --max-chars "$2"'
+  - 'exec bash "${GRAPH_PACK_DIR:?the web pack needs graph 0.16 or later, which tells pack tools where their pack is installed}/bin/web" fetch "$1" --max-chars "$2"'
   - fetch
   - "{{input.url}}"
   - "{{input.max_chars}}"

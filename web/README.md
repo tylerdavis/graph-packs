@@ -13,7 +13,7 @@ That installs the pack into the project's `.graph/packs/web`. Add `--global` to 
 ## Requirements
 
 - macOS (Apple Silicon or Intel) or Linux (x86-64 or ARM).
-- graph 0.17 or later.
+- graph 0.16 or later.
 - `bash` on your `PATH`.
 
 The pack ships a small binary for each of those systems in `bin/`, so nothing else needs installing.
