@@ -74,7 +74,8 @@ jobs:
           test "$code" = 1
           grep -q "search needs a query" "$RUNNER_TEMP/err"
           if [ "${{ runner.os }}" = Linux ]; then
-            file "$RUNNER_TEMP/out/web-${{ matrix.platform }}" | grep -q "statically linked"
+            file "$RUNNER_TEMP/out/web-${{ matrix.platform }}" | tee "$RUNNER_TEMP/file"
+            grep -Eq "statically linked|static-pie linked" "$RUNNER_TEMP/file"
           fi
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
