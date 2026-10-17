@@ -6,6 +6,7 @@ The official packs for [graph](https://github.com/tylerdavis/graph).
 |---|---|---|
 | [`github/`](github/) | Read and comment on pull requests, releases and git history | `graph pack add github` |
 | [`slack/`](slack/) | Post messages from graph plans | `graph pack add slack` |
+| [`web/`](web/) | Search the web and read pages as markdown | `graph pack add web` |
 
 Each directory is a complete pack with its own `pack.toml`, README and CHANGELOG. Each pack's README lists the commands it runs on your machine, the tokens it reads, and which of its tools write to an outside service. To write your own pack, start from [graph-pack-template](https://github.com/tylerdavis/graph-pack-template).
 

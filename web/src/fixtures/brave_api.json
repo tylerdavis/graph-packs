@@ -1,0 +1,33 @@
+{
+  "type": "search",
+  "query": {
+    "original": "stripe api create customer",
+    "more_results_available": true
+  },
+  "mixed": {
+    "type": "mixed",
+    "main": [{"type": "web", "index": 0, "all": false}]
+  },
+  "web": {
+    "type": "search",
+    "results": [
+      {
+        "type": "search_result",
+        "title": "Create a customer | <strong>Stripe</strong> API Reference",
+        "url": "https://docs.stripe.com/api/customers/create",
+        "is_source_local": false,
+        "description": "Creates a new <strong>customer</strong> object. Returns the <strong>Customer</strong> object after successful <strong>customer</strong> creation.",
+        "language": "en",
+        "family_friendly": true
+      },
+      {
+        "type": "search_result",
+        "title": "Customers | Stripe API Reference",
+        "url": "https://docs.stripe.com/api/customers",
+        "description": "This object represents a customer of your business &amp; lets you track payments.",
+        "extra_snippets": ["Not used"]
+      }
+    ],
+    "family_friendly": true
+  }
+}

@@ -1,0 +1,10 @@
+version = 1
+name = "web"
+description = "Search the web and read pages as markdown, so agents can check API docs and current facts."
+license = "MIT"
+homepage = "https://github.com/tylerdavis/graph-packs/tree/main/web"
+
+[requires]
+graph = ">=0.16"
+os = ["macos", "linux"]
+binaries = ["bash"]

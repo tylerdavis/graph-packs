@@ -1,0 +1,54 @@
+version: 2
+name: search
+description: >
+  Search the web and get back the top results as {query, backend, results:
+  [{title, url, snippet}]}. Use it before writing anything against an
+  outside service, to find its API reference or docs page instead of
+  working from memory, and to check current facts such as versions, release
+  dates, prices or renamed endpoints. Then read the most relevant page with
+  web__tool__fetch. Searches through SearXNG when SEARXNG_URL is set, the
+  Brave Search API when BRAVE_API_KEY is set, and Brave's public results
+  page otherwise, so it needs no key. Read-only.
+kind: exec
+command: bash
+args:
+  - "-c"
+  - 'exec bash "${GRAPH_PACK_DIR:?the web pack needs graph 0.16 or later, which tells pack tools where their pack is installed}/bin/web" search "$1" --num "$2"'
+  - search
+  - "{{input.query}}"
+  - "{{input.num}}"
+env:
+  SEARXNG_URL: "${SEARXNG_URL:-}"
+  BRAVE_API_KEY: "${BRAVE_API_KEY:-}"
+output: json
+timeout_secs: 45
+read_only: true
+input_schema:
+  type: object
+  required: [query]
+  properties:
+    query:
+      type: string
+      description: >
+        What to search for, as you'd type it into a search engine, such as
+        "stripe api create customer" or "ghostty config font-family".
+        Naming the service and "api" or "docs" finds reference pages.
+    num:
+      type: integer
+      minimum: 1
+      maximum: 20
+      default: 10
+      description: How many results to return, at most 20
+output_schema:
+  type: object
+  properties:
+    query: { type: string, description: The query that was searched }
+    backend: { type: string, enum: [searxng, brave_api, brave], description: Which search backend answered }
+    results:
+      type: array
+      items:
+        type: object
+        properties:
+          title: { type: string, description: The page title }
+          url: { type: string, description: The page URL, to pass to web__tool__fetch }
+          snippet: { type: string, description: A short excerpt of the page, empty when the backend gave none }

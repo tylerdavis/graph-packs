@@ -1,0 +1,147 @@
+name: web binaries
+
+on:
+  pull_request:
+    paths:
+      - "web/src/**"
+      - ".github/workflows/web-binaries.yaml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: darwin-arm64
+            runner: macos-15
+            target: aarch64-apple-darwin
+            runs: true
+          - platform: darwin-x86_64
+            runner: macos-15
+            target: x86_64-apple-darwin
+            runs: false
+          - platform: linux-x86_64
+            runner: ubuntu-24.04
+            target: x86_64-unknown-linux-musl
+            runs: true
+          - platform: linux-aarch64
+            runner: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-musl
+            runs: true
+    runs-on: ${{ matrix.runner }}
+    defaults:
+      run:
+        working-directory: web/src
+    env:
+      CARGO_TARGET_DIR: ${{ github.workspace }}/web/src/target
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Install the toolchain
+        run: |
+          rustup toolchain install 1.94 --profile minimal --component clippy --target ${{ matrix.target }}
+          rustup default 1.94
+          if [ "${{ runner.os }}" = Linux ]; then
+            sudo apt-get update
+            sudo apt-get install -y musl-tools
+          fi
+      - name: Test
+        if: matrix.runs
+        run: |
+          cargo clippy --locked --all-targets -- -D warnings
+          cargo test --locked
+      - name: Build
+        run: cargo build --locked --release --target ${{ matrix.target }}
+      - name: Name the binary
+        run: |
+          mkdir -p "$RUNNER_TEMP/out"
+          cp "target/${{ matrix.target }}/release/web" "$RUNNER_TEMP/out/web-${{ matrix.platform }}"
+          chmod 755 "$RUNNER_TEMP/out/web-${{ matrix.platform }}"
+          ls -l "$RUNNER_TEMP/out"
+      - name: Check it runs
+        if: matrix.runs
+        run: |
+          set +e
+          "$RUNNER_TEMP/out/web-${{ matrix.platform }}" search "" 2> "$RUNNER_TEMP/err"
+          code=$?
+          set -e
+          cat "$RUNNER_TEMP/err"
+          test "$code" = 1
+          grep -q "search needs a query" "$RUNNER_TEMP/err"
+          if [ "${{ runner.os }}" = Linux ]; then
+            file "$RUNNER_TEMP/out/web-${{ matrix.platform }}" | tee "$RUNNER_TEMP/file"
+            grep -Eq "statically linked|static-pie linked" "$RUNNER_TEMP/file"
+          fi
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: web-${{ matrix.platform }}
+          path: ${{ runner.temp }}/out/web-${{ matrix.platform }}
+          if-no-files-found: error
+
+  commit:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      actions: write
+    env:
+      BRANCH: ${{ github.head_ref || github.ref_name }}
+    steps:
+      - name: Refuse the default branch
+        if: env.BRANCH == github.event.repository.default_branch
+        run: |
+          echo "::error::Run this workflow on a branch, then merge it through a pull request"
+          exit 1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ env.BRANCH }}
+      - name: Check whether the binaries are current
+        id: current
+        run: |
+          source="$(git rev-parse HEAD:web/src)"
+          built="$(cat web/bin/SOURCE 2>/dev/null || true)"
+          if [ "$(git rev-parse HEAD)" != "${{ github.event.pull_request.head.sha || github.sha }}" ]; then
+            echo "::warning::$BRANCH moved while the binaries were building; the run for its new head commits them"
+            echo "stale=false" >> "$GITHUB_OUTPUT"
+          elif [ "$built" = "$source" ]; then
+            echo "web/bin was already built from source tree $source"
+            echo "stale=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "stale=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        if: steps.current.outputs.stale == 'true'
+        with:
+          pattern: web-*
+          path: ${{ runner.temp }}/binaries
+          merge-multiple: true
+      - name: Commit the binaries
+        id: commit
+        if: steps.current.outputs.stale == 'true'
+        run: |
+          install -m 755 "$RUNNER_TEMP"/binaries/web-* web/bin/
+          git rev-parse HEAD:web/src > web/bin/SOURCE
+          ls -l web/bin
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add web/bin
+          if git diff --cached --quiet; then
+            echo "The binaries are already current"
+            exit 0
+          fi
+          git commit -m "build: web binaries from source tree $(cat web/bin/SOURCE)"
+          git push origin "HEAD:$BRANCH"
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
+      - name: Test the new commit
+        if: steps.commit.outputs.pushed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run test.yaml --ref "$BRANCH" \
+            || echo "::warning::Couldn't start the test workflow on $BRANCH; push a commit or rerun its checks so the required checks run on the binaries commit"

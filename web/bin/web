@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+case "$(uname -s)" in
+  Darwin) os=darwin ;;
+  Linux) os=linux ;;
+  *)
+    echo "web: no binary for $(uname -s); the web pack runs on macOS and Linux" >&2
+    exit 1
+    ;;
+esac
+
+machine="$(uname -m)"
+if [ "$os" = darwin ] && [ "$(sysctl -n hw.optional.arm64 2>/dev/null || echo 0)" = 1 ]; then
+  machine=arm64
+fi
+
+case "$machine" in
+  arm64 | aarch64) arch=$([ "$os" = darwin ] && echo arm64 || echo aarch64) ;;
+  x86_64 | amd64) arch=x86_64 ;;
+  *)
+    echo "web: no binary for $os on $machine" >&2
+    exit 1
+    ;;
+esac
+
+binary="$dir/web-$os-$arch"
+if [ ! -x "$binary" ]; then
+  echo "web: $binary is missing or not executable; reinstall the pack with graph pack add web" >&2
+  exit 1
+fi
+
+exec "$binary" "$@"
